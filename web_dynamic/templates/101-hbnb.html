@@ -1,171 +1,69 @@
-document.ready(function () {
-	const HOST = "http://127.0.0.1:5001";
-	const amenities = {};
-	const cities = {};
-	const states = {};
+<!DOCTYPE html>
+<html lang="en">
 
-	$('ul li input[type="checkbox"]').bind("change", (e) => {
-		const el = e.target;
-		let tt;
-		switch (el.id) {
-			case "state_filter":
-				tt = states;
-				break;
-			case "city_filter":
-				tt = cities;
-				break;
-			case "amenity_filter":
-				tt = amenities;
-				break;
-		}
-		if (el.checked) {
-			tt[el.dataset.name] = el.dataset.id;
-		} else {
-			delete tt[el.dataset.name];
-		}
-		if (el.id === "amenity_filter") {
-			$(".amenities h4").text(Object.keys(amenities).sort().join(", "));
-		} else {
-			$(".locations h4").text(
-				Object.keys(Object.assign({}, states, cities)).sort().join(", ")
-			);
-		}
-	});
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="../static/styles/4-common.css?{{cache_id}}">
+  <link rel="stylesheet" type="text/css" href="../static/styles/3-header.css?{{cache_id}}">
+  <link rel="stylesheet" type="text/css" href="../static/styles/3-footer.css?{{cache_id}}">
+  <link rel="stylesheet" type="text/css" href="../static/styles/6-filters.css?{{cache_id}}">
+  <link type="text/css" rel="stylesheet" href="../static/styles/8-places.css?{{cache_id}}">
+  <link rel="icon" href="../static/images/icon.png" />
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="../static/scripts/101-hbnb.js?{{cache_id}}"></script>
+  <title>HBnB</title>
+</head>
 
-	// get status of API
-	$.getJSON("http://0.0.0.0:5001/api/v1/status/", (data) => {
-		if (data.status === "OK") {
-			$("div#api_status").addClass("available");
-		} else {
-			$("div#api_status").removeClass("available");
-		}
-	});
+<body>
+  <header>
+      <div class="logo"></div>
+        <div id="api-status" class="available"
+			 style="width: 40px; height: 40px; background-color: #ccccccc; border-radius: 50%; position: absolute; top: 50px; right: 30px; transform: translateY(-50%)"></div>
+    </header>
+  <div class="container">
+    <section class="filters">
+      <div class="locations">
+        <h3>States</h3>
+        <h4>&nbsp;</h4>
+        <div class="popover">
+          <ul>
+            {% for state in states %}
+            <li>
+              <h2><input type="checkbox" id="state_filter" data-id="{{state[0].id}}" data-name="{{state[0].name}}"> {{ state[0].name }}:</h2>
+              <ul>
+                {% for city in state[1] %}
+                <li><input type="checkbox" id="city_filter" data-id="{{city.id}}"
+                    data-name="{{city.name}}">{{ city.name }}</li>
+                {% endfor %}
+              </ul>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="amenities">
+        <h3>Amenities</h3>
+        <h4>&nbsp;</h4>
+        <div class="popover">
+          <ul>
+            {% for amenity in amenities %}
+            <li><input type="checkbox" id="amenity_filter" data-id="{{amenity.id}}"
+                data-name="{{amenity.name}}">{{ amenity.name }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <button type="button">Search</button>
+    </section>
+    <div class="placesh1">
+      <h1>Places</h1>
+    </div>
+    <section class="places">
+    </section>
+  </div>
+  <footer>
+    <p>Holberton School</p>
+  </footer>
+</body>
 
-	// fetch data about places
-	$.post({
-		url: `${HOST}/api/v1/places_search`,
-		data: JSON.stringify({}),
-		headers: {
-			"Content-Type": "application/json",
-		},
-		success: (data) => {
-			data.forEach((place) =>
-				$("section.places").append(
-					`<article>
-			<div class="title_box">
-			<h2>${place.name}</h2>
-			<div class="price_by_night">$${place.price_by_night}</div>
-			</div>
-			<div class="information">
-			<div class="max_guest">${place.max_guest} Guest${
-						place.max_guest !== 1 ? "s" : ""
-					}</div>
-			<div class="number_rooms">${place.number_rooms} Bedroom${
-						place.number_rooms !== 1 ? "s" : ""
-					}</div>
-			<div class="number_bathrooms">${place.number_bathrooms} Bathroom${
-						place.number_bathrooms !== 1 ? "s" : ""
-					}</div>
-			</div> 
-			<div class="description">
-			${place.description}
-			</div>
-				</article>`
-				)
-			);
-		},
-		dataType: "json",
-	});
-
-	// search places
-	$(".filters button").bind("click", searchPlace);
-	searchPlace();
-
-
-	 // fetch places
-	 function searchPlace() {
-		$.post({
-		  url: `${HOST}/api/v1/places_search`,
-		  data: JSON.stringify({
-			amenities: Object.values(amenities),
-			states: Object.values(states),
-			cities: Object.values(cities),
-		  }),
-		  headers: {
-			"Content-Type": "application/json",
-		  },
-		  success: (data) => {
-			$("section.places").empty();
-			data.forEach((d) => console.log(d.id));
-			data.forEach((place) => {
-			  $("section.places").append(
-				`<article>
-				  <div class="title_box">
-					<h2>${place.name}</h2>
-					<div class="price_by_night">$${place.price_by_night}</div>
-				  </div>
-				  <div class="information">
-					<div class="max_guest">${place.max_guest} Guest${
-				  place.max_guest !== 1 ? "s" : ""
-				}</div>
-					  <div class="number_rooms">${place.number_rooms} Bedroom${
-				  place.number_rooms !== 1 ? "s" : ""
-				}</div>
-					  <div class="number_bathrooms">${
-						place.number_bathrooms
-					  } Bathroom${place.number_bathrooms !== 1 ? "s" : ""}</div>
-				  </div> 
-				  <div class="description">
-					${place.description}
-				  </div>
-				  <div class="reviews" data-place="${place.id}">
-					<h2></h2>
-					<ul></ul>
-				  </div>
-				</article>`
-			  );
-			  fetchReviews(place.id);
-			});
-		  },
-		  dataType: "json",
-		});
-	  }
-	
-	  function fetchReviews(placeId) {
-		$.getJSON(
-		  `${HOST}/api/v1/places/${placeId}/reviews`,
-		  (data) => {
-			$(`.reviews[data-place="${placeId}"] h2`)
-			  .text("test")
-			  .html(`${data.length} Reviews <span id="toggle_review">show</span>`);
-			$(`.reviews[data-place="${placeId}"] h2 #toggle_review`).bind(
-			  "click",
-			  { placeId },
-			  function (e) {
-				const rev = $(`.reviews[data-place="${e.data.placeId}"] ul`);
-				if (rev.css("display") === "none") {
-				  rev.css("display", "block");
-				  data.forEach((r) => {
-					$.getJSON(
-					  `${HOST}/api/v1/users/${r.user_id}`,
-					  (u) =>
-						$(".reviews ul").append(`
-					  <li>
-						<h3>From ${u.first_name + " " + u.last_name} the ${
-						  r.created_at
-						}</h3>
-						<p>${r.text}</p>
-					  </li>`),
-					  "json"
-					);
-				  });
-				} else {
-				  rev.css("display", "none");
-				}
-			  }
-			);
-		  },
-		  "json"
-		);
-	  }
-});
+</html>
