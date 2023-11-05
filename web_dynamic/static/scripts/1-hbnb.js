@@ -8,4 +8,4 @@ document.ready(function () {
       }
       $('.amenities h4').text(Object.values(amenityDict).join(', '));
     });
-}
+});

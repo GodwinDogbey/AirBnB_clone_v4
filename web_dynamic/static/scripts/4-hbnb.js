@@ -19,7 +19,6 @@ document.ready(function () {
 	});
 
 	// fetch data about places
-	//fetch
 	$.post({
 		url: `${HOST}/api/v1/places_search`,
 		data: JSON.stringify({}),
@@ -54,4 +53,8 @@ document.ready(function () {
 		},
 		dataType: "json",
 	});
+
+	// search places
+	$(".filters button").bind("click", searchPlace);
+	searchPlace();
 });
